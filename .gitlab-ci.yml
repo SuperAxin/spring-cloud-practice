@@ -1,7 +1,3 @@
-stages:
-  - build
-  - deploy
-
 build-jar:
   stage: build
   image: maven:3.9-eclipse-temurin-17
@@ -11,13 +7,15 @@ build-jar:
     - mvn clean package -DskipTests
   artifacts:
     paths:
-      - target/*.jar
+      - "**/target/*.jar"
 
 deploy:
   stage: deploy
   image: docker:latest
   tags:
     - aws
+  dependencies:
+    - build-jar
   script:
     - docker compose down || true
     - docker compose build
