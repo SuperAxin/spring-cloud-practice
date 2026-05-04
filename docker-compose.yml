@@ -1,6 +1,25 @@
 version: '3.8'
-
+# docker compose --env-file config/.env up -d
 services:
+  nacos:
+    image: nacos/nacos-server:latest
+    container_name: nacos
+    environment:
+      - MODE=standalone
+      - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_TOKEN=${AUTH_TOKEN}
+      - NACOS_AUTH_IDENTITY_KEY=${AUTH_IDENTITY_KEY}
+      - NACOS_AUTH_IDENTITY_VALUE=${AUTH_IDENTITY_VALUE}
+
+    ports:
+      - "8080:8080"
+      - "8848:8848"
+      - "9848:9848"
+
+    volumes:
+      - ./nacos/data:/home/nacos/data
+      - ./nacos/logs:/home/nacos/logs
+
   user-service:
     build: ./services/user-service
     container_name: user-service
