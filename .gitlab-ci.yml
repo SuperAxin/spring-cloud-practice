@@ -1,7 +1,9 @@
 stages:
   - test
 
-test-job:
+test:
   stage: test
+  tags:
+    - aws
   script:
-    - echo "CI/CD works!"
+    - echo "Runner works!"
