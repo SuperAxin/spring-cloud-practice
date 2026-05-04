@@ -1,12 +1,14 @@
 version: '3.8'
-# docker compose --env-file config/.env up -d
+# docker compose --env-file config/.env up -d --build
 services:
+  # 目前機器無法承受 nacos 服務先停止
   nacos:
     image: nacos/nacos-server:latest
     container_name: nacos
+    # 部署時變數來源是 GitLab Variables 不是 .env, 記得要設定
     environment:
       - MODE=standalone
-      - NACOS_AUTH_ENABLE=true
+      - NACOS_AUTH_ENABLE=false
       - NACOS_AUTH_TOKEN=${AUTH_TOKEN}
       - NACOS_AUTH_IDENTITY_KEY=${AUTH_IDENTITY_KEY}
       - NACOS_AUTH_IDENTITY_VALUE=${AUTH_IDENTITY_VALUE}
@@ -20,6 +22,13 @@ services:
       - ./nacos/data:/home/nacos/data
       - ./nacos/logs:/home/nacos/logs
 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 20s
+
   user-service:
     build: ./services/user-service
     container_name: user-service
@@ -27,6 +36,9 @@ services:
       - "8101:8101"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      nacos:
+        condition: service_healthy
 
   order-service:
     build: ./services/order-service
@@ -35,6 +47,9 @@ services:
       - "8102:8102"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      nacos:
+        condition: service_healthy
 
   gateway:
     build: ./gateway
@@ -42,8 +57,10 @@ services:
     ports:
       - "8100:8100"
     depends_on:
-      - user-service
-      - order-service
+      user-service:
+        condition: service_started
+      order-service:
+        condition: service_started
 
   nginx:
     build: ./nginx
