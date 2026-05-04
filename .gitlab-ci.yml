@@ -1,9 +1,16 @@
 stages:
-  - test
+  - deploy
 
-test:
-  stage: test
+deploy:
+  stage: deploy
   tags:
     - aws
   script:
-    - echo "Runner works!"
+    # 停掉舊服務
+    - docker-compose down || true
+
+    # 重新 build
+    - docker-compose build
+
+    # 啟動服務
+    - docker-compose up -d
