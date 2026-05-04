@@ -7,10 +7,10 @@ deploy:
     - aws
   script:
     # 停掉舊服務
-    - docker-compose down || true
+    - docker compose down || true
 
     # 重新 build
-    - docker-compose build
+    - docker compose build
 
     # 啟動服務
-    - docker-compose up -d
+    - docker compose up -d
