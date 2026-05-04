@@ -1,16 +1,19 @@
 stages:
+  - build
   - deploy
+
+build-jar:
+  stage: build
+  tags:
+    - aws
+  script:
+    - ./mvnw clean package -DskipTests
 
 deploy:
   stage: deploy
   tags:
     - aws
   script:
-    # 停掉舊服務
     - docker compose down || true
-
-    # 重新 build
     - docker compose build
-
-    # 啟動服務
     - docker compose up -d
